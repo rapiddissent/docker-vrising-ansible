@@ -1,0 +1,32 @@
+---
+- name: Ensure multiverse repository is enabled
+  ansible.builtin.apt_repository:
+    repo: deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_facts['distribution_release'] }} multiverse
+    update_cache: true
+
+- name: Install apt dependencies (docker, docker-compose)
+  ansible.builtin.apt:
+    pkg:
+      - docker.io
+      - docker-compose
+    update_cache: true
+    cache_valid_time: 3600  # 1 hour
+
+- name: Symlink steamcmd into a directory in the PATH
+  ansible.builtin.file:
+    src: /usr/games/steamcmd
+    dest: /usr/bin/steamcmd
+    owner: root
+    group: root
+    state: link
+
+- name: Create the service user's group {{ SERVICE_USER }}
+  ansible.builtin.group:
+    name: "{{ SERVICE_USER }}"
+    state: present
+
+- name: Create the service user {{ SERVICE_USER }}
+  ansible.builtin.user:
+    name: "{{ SERVICE_USER }}"
+    groups: "docker, {{ SERVICE_USER }}"
+    state: present

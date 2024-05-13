@@ -1,0 +1,23 @@
+---
+- name: Copy the Systemd service template
+  ansible.builtin.template:
+    src: vrising_systemd.service.j2
+    dest: /lib/systemd/system/vrising.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Symlink the Systemd service file to /etc
+  ansible.builtin.file:
+    src: /lib/systemd/system/vrising.service
+    dest: /etc/systemd/system/vrising.service
+    owner: root
+    group: root
+    state: link
+
+- name: Start and enable the V Rising service
+  ansible.builtin.systemd:
+    name: vrising
+    state: started
+    enabled: true
+    daemon_reload: true

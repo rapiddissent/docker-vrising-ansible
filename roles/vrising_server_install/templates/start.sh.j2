@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+readonly s=/mnt/vrising/server
+readonly p=/mnt/vrising/persistentdata
+
+readonly SERVERNAME=${SERVERNAME:-{{ SERVER_NAME }}}
+readonly WORLDNAME=${WORLDNAME:-{{ WORLD_NAME }}}
+readonly GAMEPORT=${GAMEPORT:-{{ CONTAINER_GAME_PORT }}}
+readonly QUERYPORT=${QUERYPORT:-{{ CONTAINER_QUERY_PORT }}}
+
+if [ ! -z $UID ]; then
+	usermod -u $UID docker 2>&1
+fi 
+if [ ! -z $GID ]; then
+	groupmod -g $GID docker 2>&1
+fi
+
+echo " "
+if ! grep -o 'avx[^ ]*' /proc/cpuinfo; then
+	unsupported_file="VRisingServer_Data/Plugins/x86_64/lib_burst_generated.dll"
+	echo "AVX or AVX2 not supported; Check if unsupported ${unsupported_file} exists"
+	if [ -f "${s}/${unsupported_file}" ]; then
+		echo "Changing ${unsupported_file} as attempt to fix issues..."
+		mv "${s}/${unsupported_file}" "${s}/${unsupported_file}.bak"
+	fi
+fi
+
+echo " "
+mkdir -p "${p}/Settings"
+if [[ ! -f "${p}/Settings/ServerGameSettings.json" ]]; then
+        echo "${p}/Settings/ServerGameSettings.json not found. Copying default file."
+        cp "${s}/VRisingServer_Data/StreamingAssets/Settings/ServerGameSettings.json" "${p}/Settings/" 2>&1
+fi
+if [[ ! -f "${p}/Settings/ServerHostSettings.json" ]]; then
+        echo "${p}/Settings/ServerHostSettings.json not found. Copying default file."
+        cp "${s}/VRisingServer_Data/StreamingAssets/Settings/ServerHostSettings.json" "${p}/Settings/" 2>&1
+fi
+cd "${s}"
+echo "Starting V Rising Dedicated Server with name ${SERVERNAME}"
+echo "Trying to remove /tmp/.X0-lock"
+rm /tmp/.X0-lock 2>&1
+echo " "
+echo "Starting Xvfb"
+Xvfb :0 -screen 0 1024x768x16 &
+echo "Launching wine64 V Rising"
+echo " "
+DISPLAY=:0.0 wine64 /mnt/vrising/server/VRisingServer.exe -persistentDataPath ${p} -serverName "${SERVERNAME}" -saveName "${WORLDNAME}" -logFile "${p}/VRisingServer.log" "${GAMEPORT}" "${QUERYPORT}" 2>&1
+/usr/bin/tail -f /mnt/vrising/persistentdata/VRisingServer.log
+

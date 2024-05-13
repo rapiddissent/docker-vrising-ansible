@@ -1,0 +1,9 @@
+---
+- name: Install V Rising containerized server
+  hosts: localhost
+
+  vars_files: config.yml
+
+  roles:
+    - role: vrising_server_install
+      become: true

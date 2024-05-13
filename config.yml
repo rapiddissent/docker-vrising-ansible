@@ -1,0 +1,23 @@
+---
+# Local user / filesystem parameters
+SERVICE_USER: steam
+TIMEZONE: America/Denver  # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+VRISING_ROOT_DIR: "/home/{{ SERVICE_USER }}/vrising"
+VRISING_DOCKER_DIR: "{{ VRISING_ROOT_DIR }}/docker"
+VRISING_SERVER_DIR: "{{ VRISING_ROOT_DIR }}/vrising_server_install"
+VRISING_GAME_FILES_DIR: "{{ VRISING_ROOT_DIR }}/game_files"
+HOST_GAME_PORT: 9876
+HOST_QUERY_PORT: 9877
+
+# Docker parameters
+VRISING_CONTAINER_NAME: vrising  # Name of the running container when listed by `docker ps`
+VRISING_IMAGE_NAME: vrising-server  # Name of the image when listed by `docker images`. Always ':latest'
+CONTAINER_GAME_PORT: 9876
+CONTAINER_QUERY_PORT: 9877
+
+# V Rising Server parameters
+SERVER_NAME: RiversOfBlood
+WORLD_NAME: world1
+
+# Systemd service parameters
+VRISING_SERVICE_NAME: "V Rising Server"

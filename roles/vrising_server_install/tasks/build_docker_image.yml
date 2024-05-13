@@ -1,0 +1,27 @@
+---
+- name: Ensure V Rising Docker directory exists
+  ansible.builtin.file:
+    path: "{{ VRISING_DOCKER_DIR }}"
+    owner: "{{ SERVICE_USER }}"
+    group: "{{ SERVICE_USER }}"
+    state: directory
+  become: true
+
+- name: Copy files to the V Rising Docker directory
+  ansible.builtin.template:
+    src: "{{ item.filename }}.j2"
+    dest: "{{ VRISING_DOCKER_DIR }}/{{ item.filename }}"
+    owner: "{{ SERVICE_USER }}"
+    group: "{{ SERVICE_USER }}"
+    mode: "{{ item.mode }}"
+  become: true
+  with_items:
+    - {"filename": "Dockerfile", "mode": "0644"}
+    - {"filename": "build_image.sh", "mode": "0755"}
+    - {"filename": "start.sh", "mode": "0644"}
+    - {"filename": "docker-compose.yml", "mode": "0644"}
+
+- name: Build the docker image (runs long, be patient)
+  ansible.builtin.command: 
+    cmd: ./build_image.sh
+    chdir: "{{ VRISING_DOCKER_DIR }}"

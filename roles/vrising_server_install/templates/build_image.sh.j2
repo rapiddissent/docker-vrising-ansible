@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+readonly PROGNAME=$(basename $0)
+readonly PROGDIR=$(readlink -m $(dirname $0))
+readonly ARGS="$@"
+
+readonly IMAGE_NAME={{ VRISING_IMAGE_NAME }}
+
+set -e
+
+usage() {
+    cat <<- EOF
+usage: ${PROGNAME} [OPTIONS...]
+
+Options:
+  -h, --help            Show this message and exit
+  -f, --force-rebuild   Rebuild the docker container from scratch
+EOF
+}
+
+parse_args() {
+    options=`getopt -o hf --long help,force-rebuild -n "${PROGNAME}" -- "${ARGS}"`
+    eval set -- ${options}
+    while true
+    do
+        case ${1} in
+            -h|--help)
+                usage ; exit 0 ;;
+            -f|--force-rebuild)
+                REBUILD_FLAG="--no-cache" ; shift ;;
+            --)
+                shift ; break ;;
+        esac
+    done
+}
+
+main() {
+    # Set up argument defaults
+    REBUILD_FLAG=""
+
+    # Read in user args
+    parse_args
+
+    # `cd` to the script dir
+    pushd . 2>&1 >/dev/null
+    cd ${PROGDIR}
+
+    docker build -t "${IMAGE_NAME}:latest" ${REBUILD_FLAG} .
+
+    # Cleanup
+    popd 2>&1 >/dev/null
+}
+
+main

@@ -1,0 +1,29 @@
+FROM ubuntu:22.04 
+LABEL maintainer="Kyle Smith"
+VOLUME ["/mnt/vrising/server", "/mnt/vrising/persistentdata"]
+
+ARG DEBIAN_FRONTEND="noninteractive"
+RUN apt-get update -y && \
+    apt-get install -y apt-utils && \
+    apt-get install -y software-properties-common \
+                       tzdata && \
+    add-apt-repository multiverse && \
+    dpkg --add-architecture i386 && \
+    apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y libgl1-mesa-glx:i386 \
+                       wine \
+                       winbind \
+                       xserver-xorg \
+                       xvfb
+
+RUN echo "{{ TIMEZONE }}" > /etc/timezone && \
+    ln -snf /usr/share/zoneinfo/{{ TIMEZONE }} /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata 2>&1
+RUN rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    apt-get autoremove -y
+
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+CMD ["/start.sh"]

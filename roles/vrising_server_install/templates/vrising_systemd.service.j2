@@ -1,0 +1,17 @@
+[Unit]
+Description={{ VRISING_SERVICE_NAME }}
+PartOf=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory={{ VRISING_DOCKER_DIR }}
+User={{ SERVICE_USER }}
+Group={{ SERVICE_USER }}
+ExecStartPre=/usr/games/steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir {{ VRISING_SERVER_DIR }} +login anonymous +app_update {{ VRISING_SERVER_APP_ID }} +quit
+ExecStart=docker-compose up -d --remove-orphans
+ExecStop=docker-compose down
+
+[Install]
+WantedBy=multi-user.target

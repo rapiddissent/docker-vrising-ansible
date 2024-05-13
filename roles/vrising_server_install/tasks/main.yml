@@ -1,0 +1,23 @@
+---
+- name: Ensure prerequisites are installed
+  ansible.builtin.include_tasks:
+    file: "prerequisites/{{ ansible_facts['distribution'] }}.yml"
+
+- name: Build the Docker image that will abstract Wine setup
+  ansible.builtin.include_tasks:
+    file: build_docker_image.yml
+
+- name: Install the V Rising Server via steamcmd
+  ansible.builtin.command: "steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir {{ VRISING_SERVER_DIR }} +login anonymous +app_update {{ VRISING_SERVER_APP_ID }} +quit"
+  changed_when: false
+
+- name: Change ownership of installed files to {{ SERVICE_USER }}
+  ansible.builtin.file:
+    path: "{{ VRISING_ROOT_DIR }}"
+    owner: "{{ SERVICE_USER }}"
+    group: "{{ SERVICE_USER }}"
+    recurse: true
+
+- name: Set up the V Rising Linux server
+  ansible.builtin.include_tasks:
+    file: "service_setup/{{ ansible_facts['distribution'] }}.yml"

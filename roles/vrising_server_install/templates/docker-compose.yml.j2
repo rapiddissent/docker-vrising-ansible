@@ -1,0 +1,19 @@
+version: '3.3'
+services:
+  vrising:
+    # build: . # Build from Dockerfile
+    container_name: {{ VRISING_CONTAINER_NAME }}
+    image: {{ VRISING_IMAGE_NAME }}
+    network_mode: bridge
+    environment:
+      - TZ={{ TIMEZONE }}
+      - SERVERNAME={{ SERVER_NAME }}
+      - WORLDNAME={{ WORLD_NAME }}
+      - GAMEPORT={{ CONTAINER_GAME_PORT }}
+      - QUERYPORT={{ CONTAINER_QUERY_PORT }}
+    volumes:
+      - '{{ VRISING_SERVER_DIR }}:/mnt/vrising/server:rw'
+      - '{{ VRISING_GAME_FILES_DIR }}:/mnt/vrising/persistentdata:rw'
+    ports:
+      - '{{ HOST_GAME_PORT }}:{{ CONTAINER_GAME_PORT }}/udp'
+      - '{{ HOST_QUERY_PORT }}:{{ CONTAINER_QUERY_PORT }}/udp'
